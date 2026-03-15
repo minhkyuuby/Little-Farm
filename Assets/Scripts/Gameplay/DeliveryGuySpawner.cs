@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using LittleFarm.GameplayEventSubject;
+using LittleFarm.UpgradesEventSubject;
 
 public class DeliveryGuySpawner : MonoBehaviour
 {
@@ -11,10 +13,13 @@ public class DeliveryGuySpawner : MonoBehaviour
     [SerializeField] private string _poolId = "delivery-guys";
     [SerializeField] private PoolSettings _poolSettings = new();
     [SerializeField, Min(1)] private int _maxActiveDeliveryGuys = 1;
+    [SerializeField] private ManagerUpgradeSystem _upgradeSystem;
 
     private readonly List<DeliveryGuyController> _activeDeliveryGuys = new();
+    private int _defaultMaxActiveDeliveryGuys = 1;
 
     public int MaxActiveDeliveryGuys => Mathf.Max(1, _maxActiveDeliveryGuys);
+    public event Action<int> OnMaxActiveDeliveryGuysChanged;
 
     private void OnValidate()
     {
@@ -22,24 +27,35 @@ public class DeliveryGuySpawner : MonoBehaviour
         {
             _garden = FindFirstObjectByType<Garden>();
         }
+
+        if (_upgradeSystem == null)
+        {
+            _upgradeSystem = ManagerUpgradeSystem.Instance ?? FindFirstObjectByType<ManagerUpgradeSystem>();
+        }
     }
 
     private void Start()
     {
+        _defaultMaxActiveDeliveryGuys = Mathf.Max(1, _maxActiveDeliveryGuys);
+        TryBindUpgradeSystem();
+        ApplyCapacityFromUpgrades();
         EnsurePool();
         TryFillCapacity();
     }
 
     private void OnEnable()
     {
+        TryBindUpgradeSystem();
         EventBus.Subscribe<PlantProduced>(OnPlantProduced);
         EventBus.Subscribe<DeliveryGuyReturned>(OnDeliveryGuyReturned);
+        EventBus.Subscribe<UpgradePaid>(OnUpgradePaid);
     }
 
     private void OnDisable()
     {
         EventBus.Unsubscribe<PlantProduced>(OnPlantProduced);
         EventBus.Unsubscribe<DeliveryGuyReturned>(OnDeliveryGuyReturned);
+        EventBus.Unsubscribe<UpgradePaid>(OnUpgradePaid);
     }
 
     private void Update()
@@ -50,14 +66,28 @@ public class DeliveryGuySpawner : MonoBehaviour
 
     public void SetMaxActiveDeliveryGuys(int maxActive)
     {
-        _maxActiveDeliveryGuys = Mathf.Max(1, maxActive);
+        var clamped = Mathf.Max(1, maxActive);
+        if (_maxActiveDeliveryGuys == clamped)
+        {
+            return;
+        }
+
+        _maxActiveDeliveryGuys = clamped;
         CleanupInactive();
         TryFillCapacity();
+        OnMaxActiveDeliveryGuysChanged?.Invoke(_maxActiveDeliveryGuys);
     }
 
     public void IncreaseMaxActiveDeliveryGuys(int amount = 1)
     {
         SetMaxActiveDeliveryGuys(_maxActiveDeliveryGuys + Mathf.Max(0, amount));
+    }
+
+    public void ApplyCapacityFromUpgrades()
+    {
+        var bonus = _upgradeSystem != null ? _upgradeSystem.DeliveryCapacityBonus : 0;
+        var targetCapacity = Mathf.Max(1, _defaultMaxActiveDeliveryGuys + Mathf.Max(0, bonus));
+        SetMaxActiveDeliveryGuys(targetCapacity);
     }
 
     private void EnsurePool()
@@ -149,5 +179,21 @@ public class DeliveryGuySpawner : MonoBehaviour
     {
         CleanupInactive();
         TryFillCapacity();
+    }
+
+    private void TryBindUpgradeSystem()
+    {
+        var resolved = _upgradeSystem != null ? _upgradeSystem : ManagerUpgradeSystem.Instance ?? FindFirstObjectByType<ManagerUpgradeSystem>();
+        if (resolved == _upgradeSystem)
+        {
+            return;
+        }
+
+        _upgradeSystem = resolved;
+    }
+
+    private void OnUpgradePaid(UpgradePaid message)
+    {
+        ApplyCapacityFromUpgrades();
     }
 }

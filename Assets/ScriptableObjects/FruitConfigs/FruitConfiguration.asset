@@ -22,9 +22,12 @@ MonoBehaviour:
     AutoExpand: 1
   _levelConfigs:
   - _basePriceCoin: 10000
+    _levelUnlockPriceCoin: 0
     _developmentDuration: 12
   - _basePriceCoin: 20000
+    _levelUnlockPriceCoin: 15
     _developmentDuration: 10
   - _basePriceCoin: 30000
-    _developmentDuration: 8
+    _levelUnlockPriceCoin: 20
+    _developmentDuration: 5
   _restDuration: 0.3

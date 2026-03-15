@@ -14,6 +14,7 @@ public class Dock : MonoBehaviour
 {
     [SerializeField] private Transform _deliveryPosition;
     [SerializeField] private Transform _customerPosition;
+    [SerializeField] private ParticleSystem _purchaseParticleSystem;
     [SerializeField] private DockState _state = DockState.Empty;
 
     private CustomerController _waitingCustomer;
@@ -102,6 +103,7 @@ public class Dock : MonoBehaviour
         _waitingCustomer = null;
         _state = DockState.Empty;
         EventBus.Publish(new DockBecameEmpty(this));
+        _purchaseParticleSystem?.Play();
         return true;
     }
 

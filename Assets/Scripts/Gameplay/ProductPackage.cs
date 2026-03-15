@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -5,6 +6,7 @@ public class ProductPackage : MonoBehaviour
 {
     [SerializeField] private Transform _stackStartPosition;
     [SerializeField] private float _stackStepY = 0.2f;
+    [SerializeField, Min(0)] private long _packagePriceCoin;
 
     private readonly List<Fruit> _storedFruits = new();
 
@@ -13,6 +15,7 @@ public class ProductPackage : MonoBehaviour
     public int Capacity => int.MaxValue;
     public int Count => _storedFruits.Count;
     public int FreeSlots => int.MaxValue;
+    public long PackagePriceCoin => Math.Max(0L, _packagePriceCoin);
 
     private Transform StackRoot => _stackStartPosition != null ? _stackStartPosition : transform;
 
@@ -35,6 +38,12 @@ public class ProductPackage : MonoBehaviour
         }
 
         return _storedFruits.Count > 0;
+    }
+
+    public void SetPackagePrice(long packagePriceCoin)
+    {
+        // TODO: Revisit package pricing when economy design supports quantity/rarity modifiers.
+        _packagePriceCoin = Math.Max(0L, packagePriceCoin);
     }
 
     public bool TryDeliverTo(CustomerController customer)
@@ -64,6 +73,8 @@ public class ProductPackage : MonoBehaviour
             return false;
         }
 
+        target.SetPackagePrice(PackagePriceCoin);
+
         for (var i = 0; i < _storedFruits.Count; i++)
         {
             var fruit = _storedFruits[i];
@@ -76,6 +87,7 @@ public class ProductPackage : MonoBehaviour
         }
 
         _storedFruits.Clear();
+        _packagePriceCoin = 0L;
         return true;
     }
 
@@ -88,7 +100,7 @@ public class ProductPackage : MonoBehaviour
 
     private void ReleaseStoredFruits()
     {
-        var poolManager = Object.FindFirstObjectByType<PoolManager>();
+        var poolManager = UnityEngine.Object.FindFirstObjectByType<PoolManager>();
         if (poolManager == null)
         {
             _storedFruits.Clear();
@@ -105,6 +117,7 @@ public class ProductPackage : MonoBehaviour
         }
 
         _storedFruits.Clear();
+        _packagePriceCoin = 0L;
     }
 
     private void AttachFruitToTop(Fruit fruit)

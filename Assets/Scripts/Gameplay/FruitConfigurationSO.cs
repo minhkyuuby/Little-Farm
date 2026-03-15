@@ -6,9 +6,11 @@ using System;
 public struct FruitLevelConfig
 {
     [SerializeField] private long _basePriceCoin;
+    [SerializeField] private long _levelUnlockPriceCoin;
     [SerializeField] private float _developmentDuration;
 
     public long BasePriceCoin => Math.Max(0L, _basePriceCoin);
+    public long LevelUnlockPriceCoin => Math.Max(0L, _levelUnlockPriceCoin);
     public float DevelopmentDuration => Mathf.Max(0.01f, _developmentDuration);
 }
 

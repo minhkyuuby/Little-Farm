@@ -118,6 +118,8 @@ public class PlantInfoCanvas : MonoBehaviour
             _canvas = GetComponent<Canvas>();
         }
 
+        RebuildViews();
+
         if (_canvas != null)
         {
             _canvas.enabled = true;

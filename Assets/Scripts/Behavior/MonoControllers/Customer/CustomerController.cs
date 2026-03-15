@@ -51,7 +51,14 @@ public class CustomerController : MonoBehaviour, IPoolable
 		}
 
 		var purchasedNow = _productPackage.Count;
+		var packagePriceCoin = CurrencyManager.GetScaledByGlobalProfit(_productPackage.PackagePriceCoin);
 		AcceptPurchase(purchasedNow);
+
+		if (packagePriceCoin > 0)
+		{
+			CurrencyManager.AddCoin(packagePriceCoin, "CustomerPurchase");
+		}
+
 		return purchasedNow > 0;
 	}
 

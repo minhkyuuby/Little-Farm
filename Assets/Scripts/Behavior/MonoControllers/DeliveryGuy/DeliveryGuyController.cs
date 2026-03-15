@@ -42,6 +42,7 @@ public class DeliveryGuyController : MonoBehaviour, IPoolable
         var harvested = plant.TryHarvest(_productPackage);
         if (harvested)
         {
+            _productPackage.SetPackagePrice(plant.CurrentFruitBasePriceCoin);
             _targetPlant = null;
         }
 

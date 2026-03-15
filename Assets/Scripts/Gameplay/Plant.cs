@@ -29,6 +29,17 @@ public class Plant : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        if (!_autoStartGrowth || _growthRoutine != null)
+        {
+            return;
+        }
+
+        EnsureFruitPool();
+        StartGrowthLoop();
+    }
+
     private void OnDisable()
     {
         if (_growthRoutine != null)
@@ -46,7 +57,10 @@ public class Plant : MonoBehaviour
     public bool IsReservedForHarvest => _isReservedForHarvest;
     public bool IsAvailableForHarvest => _isHarvestable && !_isReservedForHarvest;
     public int Level => _level;
+    public int MaxConfiguredLevel => _fruitConfig != null ? _fruitConfig.MaxConfiguredLevel : 1;
     public long CurrentFruitBasePriceCoin => GetCurrentLevelConfig().BasePriceCoin;
+    public long NextLevelUpgradeCostCoin => GetNextLevelUpgradeCostCoin();
+    public bool CanUpgradeToNextLevel => _level < MaxConfiguredLevel;
     public float CurrentDevelopmentDuration => GetCurrentLevelConfig().DevelopmentDuration;
     public float CurrentRestDuration => GetRestDuration();
     public float CurrentProductionDuration => CurrentDevelopmentDuration + CurrentRestDuration;
@@ -63,6 +77,23 @@ public class Plant : MonoBehaviour
     public void UpgradeLevel(int amount = 1)
     {
         SetLevel(_level + Mathf.Max(0, amount));
+    }
+
+    public bool TryUpgradeToNextLevel()
+    {
+        if (!CanUpgradeToNextLevel)
+        {
+            return false;
+        }
+
+        var upgradeCost = NextLevelUpgradeCostCoin;
+        if (upgradeCost > 0 && !CurrencyManager.TrySpendCoin(upgradeCost, "PlantUpgrade"))
+        {
+            return false;
+        }
+
+        SetLevel(_level + 1);
+        return true;
     }
 
     public bool TryReserveForHarvest()
@@ -285,6 +316,17 @@ public class Plant : MonoBehaviour
         }
 
         return _fruitConfig.GetLevelConfig(_level);
+    }
+
+    private long GetNextLevelUpgradeCostCoin()
+    {
+        if (!CanUpgradeToNextLevel || _fruitConfig == null)
+        {
+            return 0L;
+        }
+
+        var nextLevelConfig = _fruitConfig.GetLevelConfig(_level + 1);
+        return nextLevelConfig.LevelUnlockPriceCoin;
     }
 
     private void NotifyPlantDataChanged()

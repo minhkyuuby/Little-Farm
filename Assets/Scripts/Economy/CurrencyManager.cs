@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using LittleFarm.EconomyEventSubject;
 
 public enum CurrencyType
 {
@@ -48,11 +49,14 @@ public static class CurrencyManager
 {
 	private static readonly Dictionary<CurrencyType, long> Balances = new();
 	private static bool _isInitialized;
+	private static float _globalProfitScale = 1f;
 
 	public static bool IsInitialized => _isInitialized;
 	public static long CoinBalance => GetBalance(CurrencyType.Coin);
+	public static float GlobalProfitScale => Math.Max(1f, _globalProfitScale);
 
 	public static event Action<CurrencyChangedEvent> OnCurrencyChanged;
+	public static event Action<float> OnGlobalProfitScaleChanged;
 
 	public static void Initialize(long initialCoin = 0, string reason = "GameStart")
 	{
@@ -163,6 +167,30 @@ public static class CurrencyManager
 		return CanAfford(CurrencyType.Coin, amount);
 	}
 
+	public static void SetGlobalProfitScale(float value)
+	{
+		var next = Math.Max(1f, value);
+		if (Math.Abs(_globalProfitScale - next) < 0.0001f)
+		{
+			return;
+		}
+
+		_globalProfitScale = next;
+		OnGlobalProfitScaleChanged?.Invoke(_globalProfitScale);
+	}
+
+	public static long GetScaledByGlobalProfit(long baseValue)
+	{
+		if (baseValue <= 0)
+		{
+			return 0;
+		}
+
+		var scaled = (double)baseValue * GlobalProfitScale;
+		var rounded = Math.Round(scaled, MidpointRounding.AwayFromZero);
+		return Math.Max(0L, (long)rounded);
+	}
+
 	private static void EnsureInitialized()
 	{
 		if (_isInitialized)
@@ -194,5 +222,6 @@ public static class CurrencyManager
 		Balances[currencyType] = clamped;
 		var evt = new CurrencyChangedEvent(currencyType, previous, clamped, clamped - previous, changeType, reason);
 		OnCurrencyChanged?.Invoke(evt);
+		EventBus.Publish(new CurrencyValueChanged(currencyType, previous, clamped, clamped - previous, reason));
 	}
 }

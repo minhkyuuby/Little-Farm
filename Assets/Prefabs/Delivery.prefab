@@ -1218,6 +1218,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProductPackage
   _stackStartPosition: {fileID: 6189031941684784857}
   _stackStepY: 0.3
+  _packagePriceCoin: 0
 --- !u!1 &4743257953351667483
 GameObject:
   m_ObjectHideFlags: 0
@@ -1354,8 +1355,8 @@ MonoBehaviour:
         GUID:
           m_Value0: 17304028106019332984
           m_Value1: 1334939006580552617
-        Name: ReachTargetThreshold
-        m_Value: 1.8
+        Name: ReachPlantThreshold
+        m_Value: 2
     - rid: 8839413023988514949
       type: {class: 'BlackboardVariable`1[[UnityEngine.Animator, UnityEngine.AnimationModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
       data:
@@ -1395,12 +1396,12 @@ NavMeshAgent:
   m_AngularSpeed: 300
   m_StoppingDistance: 0
   m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
+  m_AutoBraking: 0
   m_AutoRepath: 1
-  m_Height: 2
+  m_Height: 1.8
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
+  m_ObstacleAvoidanceType: 2
 --- !u!1 &5693225996506118139
 GameObject:
   m_ObjectHideFlags: 0

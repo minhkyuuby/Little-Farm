@@ -29,4 +29,14 @@ namespace LittleFarm.GameplayEventSubject
 
         public DeliveryGuyController DeliveryGuy { get; }
     }
+
+    public readonly struct PlantUpgradeRequested
+    {
+        public PlantUpgradeRequested(Plant plant)
+        {
+            Plant = plant;
+        }
+
+        public Plant Plant { get; }
+    }
 }

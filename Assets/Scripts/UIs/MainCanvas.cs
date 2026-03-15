@@ -27,7 +27,10 @@ public class MainCanvas : MonoBehaviour
 
     private void Start()
     {
-        _upgradeCanvas.Hide();
+        if (_upgradeCanvas != null)
+        {
+            _upgradeCanvas.Hide();
+        }
     }
 
     public void ShowUpgradeCanvas()
