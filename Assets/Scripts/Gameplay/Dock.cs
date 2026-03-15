@@ -7,6 +7,7 @@ public enum DockState
     CustomerIncoming = 1,
     Available = 2,
     Delivering = 3,
+    WaitingToBuy = 4,
 }
 
 public class Dock : MonoBehaviour
@@ -25,6 +26,7 @@ public class Dock : MonoBehaviour
     public bool IsCustomerIncoming => _state == DockState.CustomerIncoming;
     public bool IsAvailable => _state == DockState.Available;
     public bool IsDelivering => _state == DockState.Delivering;
+    public bool IsWaitingToBuy => _state == DockState.WaitingToBuy;
     public CustomerController WaitingCustomer => _waitingCustomer;
     public DeliveryGuyController DeliveryGuy => _deliveryGuy;
 
@@ -78,12 +80,26 @@ public class Dock : MonoBehaviour
             return false;
         }
 
-        _waitingCustomer.TryPurchaseFromOwnPackage();
-        _waitingCustomer.Despawn();
-        _waitingCustomer = null;
-
         deliveryGuy.SetTargetDock(null);
         _deliveryGuy = null;
+        _state = DockState.WaitingToBuy;
+        return true;
+    }
+
+    public bool TryCompleteCustomerPurchase(CustomerController customer)
+    {
+        if (customer == null || !IsWaitingToBuy || _waitingCustomer != customer)
+        {
+            return false;
+        }
+
+        if (!customer.TryPurchaseFromOwnPackage())
+        {
+            return false;
+        }
+
+        customer.SetTargetDock(null);
+        _waitingCustomer = null;
         _state = DockState.Empty;
         EventBus.Publish(new DockBecameEmpty(this));
         return true;

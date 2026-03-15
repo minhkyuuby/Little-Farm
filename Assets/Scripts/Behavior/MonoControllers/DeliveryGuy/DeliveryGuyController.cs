@@ -10,12 +10,14 @@ public class DeliveryGuyController : MonoBehaviour, IPoolable
 
     private Plant _targetPlant;
     private Dock _targetDock;
+    private Vector3 _releasePosition;
 
     public ProductPackage ProductPackage => _productPackage;
     public bool HasCargo => _productPackage != null && _productPackage.HasFruits;
     public bool IsCargoEmpty => _productPackage == null || _productPackage.IsEmpty;
     public Plant TargetPlant => _targetPlant;
     public Dock TargetDock => _targetDock;
+    public Vector3 ReleasePosition => _releasePosition;
 
     void OnValidate()
     {
@@ -79,6 +81,11 @@ public class DeliveryGuyController : MonoBehaviour, IPoolable
     public void SetTargetDock(Dock dock)
     {
         _targetDock = dock;
+    }
+
+    public void SetReleasePosition(Vector3 releasePosition)
+    {
+        _releasePosition = releasePosition;
     }
 
     public bool TryReserveDeliveryDock(Market market = null)

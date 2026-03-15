@@ -2,17 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using LittleFarm.GameplayEventSubject;
+using System;
 
 public class Plant : MonoBehaviour
 {
     [SerializeField] private List<Transform> _fruitPositions = new();
     [SerializeField] private FruitConfigurationSO _fruitConfig;
+    [SerializeField, Min(1)] private int _level = 1;
     [SerializeField] private bool _autoStartGrowth = true;
 
     private readonly List<Fruit> _activeFruits = new();
     private Coroutine _growthRoutine;
     private bool _isHarvestable;
     private bool _isReservedForHarvest;
+    private float _productionRemainingSeconds;
+
+    public event Action<Plant> OnPlantDataChanged;
 
     private void Start()
     {
@@ -40,6 +45,25 @@ public class Plant : MonoBehaviour
     public bool IsHarvestable => _isHarvestable;
     public bool IsReservedForHarvest => _isReservedForHarvest;
     public bool IsAvailableForHarvest => _isHarvestable && !_isReservedForHarvest;
+    public int Level => _level;
+    public long CurrentFruitBasePriceCoin => GetCurrentLevelConfig().BasePriceCoin;
+    public float CurrentDevelopmentDuration => GetCurrentLevelConfig().DevelopmentDuration;
+    public float CurrentRestDuration => GetRestDuration();
+    public float CurrentProductionDuration => CurrentDevelopmentDuration + CurrentRestDuration;
+    public float ProductionRemainingSeconds => Mathf.Max(0f, _productionRemainingSeconds);
+    public string CurrentFruitDisplayName => _fruitConfig != null ? _fruitConfig.FruitDisplayName : "Fruit";
+    public Sprite CurrentFruitSprite => _fruitConfig != null ? _fruitConfig.FruitSprite : null;
+
+    public void SetLevel(int level)
+    {
+        _level = Mathf.Max(1, level);
+        NotifyPlantDataChanged();
+    }
+
+    public void UpgradeLevel(int amount = 1)
+    {
+        SetLevel(_level + Mathf.Max(0, amount));
+    }
 
     public bool TryReserveForHarvest()
     {
@@ -94,30 +118,42 @@ public class Plant : MonoBehaviour
             _isReservedForHarvest = false;
 
             var elapsed = 0f;
-            var duration = Mathf.Max(0.01f, GetDevelopmentDuration());
+            var duration = Mathf.Max(0.01f, CurrentDevelopmentDuration);
+            var restDuration = CurrentRestDuration;
+            _productionRemainingSeconds = duration + restDuration;
 
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
                 var t = Mathf.Clamp01(elapsed / duration);
                 SetFruitGrowth(t);
+                _productionRemainingSeconds = Mathf.Max(0f, (duration - elapsed) + restDuration);
                 yield return null;
             }
 
             SetFruitGrowth(1f);
             _isHarvestable = true;
+            _productionRemainingSeconds = 0f;
             EventBus.Publish(new PlantProduced(this));
+            NotifyPlantDataChanged();
 
             while (_isHarvestable)
             {
                 yield return null;
             }
 
-            var restDuration = GetRestDuration();
             if (restDuration > 0f)
             {
-                yield return new WaitForSeconds(restDuration);
+                var restElapsed = 0f;
+                while (restElapsed < restDuration)
+                {
+                    restElapsed += Time.deltaTime;
+                    _productionRemainingSeconds = Mathf.Max(0f, restDuration - restElapsed);
+                    yield return null;
+                }
             }
+
+            _productionRemainingSeconds = 0f;
         }
     }
 
@@ -146,6 +182,7 @@ public class Plant : MonoBehaviour
 
         var fruitPrefab = GetFruitPrefab();
         var poolId = GetPoolId();
+        var levelConfig = GetCurrentLevelConfig();
 
         if (_fruitPositions.Count == 0 || fruitPrefab == null)
         {
@@ -166,9 +203,12 @@ public class Plant : MonoBehaviour
                 continue;
             }
 
+            fruit.Configure(_level, CurrentFruitSprite, levelConfig.BasePriceCoin);
             fruit.transform.localScale = Vector3.zero;
             _activeFruits.Add(fruit);
         }
+
+        NotifyPlantDataChanged();
     }
 
     private void SetFruitGrowth(float t)
@@ -188,7 +228,7 @@ public class Plant : MonoBehaviour
 
     private void ReleaseFruitsToPool()
     {
-        var poolManager = Object.FindFirstObjectByType<PoolManager>();
+        var poolManager = UnityEngine.Object.FindFirstObjectByType<PoolManager>();
         if (poolManager == null)
         {
             _activeFruits.Clear();
@@ -232,13 +272,23 @@ public class Plant : MonoBehaviour
         return _fruitConfig.FruitPoolSettings;
     }
 
-    private float GetDevelopmentDuration()
-    {
-        return _fruitConfig != null ? _fruitConfig.DevelopmentDuration : 5f;
-    }
-
     private float GetRestDuration()
     {
         return _fruitConfig != null ? _fruitConfig.RestDuration : 2f;
+    }
+
+    private FruitLevelConfig GetCurrentLevelConfig()
+    {
+        if (_fruitConfig == null)
+        {
+            return new FruitLevelConfig();
+        }
+
+        return _fruitConfig.GetLevelConfig(_level);
+    }
+
+    private void NotifyPlantDataChanged()
+    {
+        OnPlantDataChanged?.Invoke(this);
     }
 }

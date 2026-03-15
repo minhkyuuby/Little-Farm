@@ -10,21 +10,21 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 24068735e4ac96846bf1cf8819734d2b, type: 3}
-  m_Name: FruitConfiguration
+  m_Name: FruitConfiguration 1
   m_EditorClassIdentifier: Assembly-CSharp::FruitConfigurationSO
   _fruitPrefab: {fileID: 3699052360555367377, guid: 7f43ad0a1dc9942deb52963a8ee6e6f4, type: 3}
-  _fruitDisplayName: Wheat
-  _fruitSprite: {fileID: 21300000, guid: 9f6e174293e737a44b0c7c85e4fd86f6, type: 3}
+  _fruitDisplayName: Wood
+  _fruitSprite: {fileID: 21300000, guid: b506a3b43045c0b49ad14f0339fb6956, type: 3}
   _fruitPoolId: fruits
   _fruitPoolSettings:
     InitialSize: 12
     MaxSize: 128
     AutoExpand: 1
   _levelConfigs:
-  - _basePriceCoin: 10000
+  - _basePriceCoin: 100000
     _developmentDuration: 12
-  - _basePriceCoin: 20000
+  - _basePriceCoin: 200000
     _developmentDuration: 10
-  - _basePriceCoin: 30000
+  - _basePriceCoin: 300000
     _developmentDuration: 8
   _restDuration: 0.3

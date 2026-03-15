@@ -8,6 +8,7 @@ public class CustomerController : MonoBehaviour, IPoolable
 	[SerializeField] private bool _forceRestartBehaviorOnSpawn = true;
 	private Dock _targetDock;
 	private Market _targetMarket;
+	private Vector3 _releasePosition;
 
 	private int _purchasedFruitCount;
 	private bool _hasPurchased;
@@ -17,6 +18,7 @@ public class CustomerController : MonoBehaviour, IPoolable
 	public ProductPackage ProductPackage => _productPackage;
 	public Dock TargetDock => _targetDock;
 	public Market TargetMarket => _targetMarket;
+	public Vector3 ReleasePosition => _releasePosition;
 
 	private void OnValidate()
 	{
@@ -48,7 +50,7 @@ public class CustomerController : MonoBehaviour, IPoolable
 			return false;
 		}
 
-		var purchasedNow = _productPackage.ReleaseAllFruitsToPool();
+		var purchasedNow = _productPackage.Count;
 		AcceptPurchase(purchasedNow);
 		return purchasedNow > 0;
 	}
@@ -80,6 +82,11 @@ public class CustomerController : MonoBehaviour, IPoolable
 		_targetMarket = market;
 	}
 
+	public void SetReleasePosition(Vector3 releasePosition)
+	{
+		_releasePosition = releasePosition;
+	}
+
 	public bool TryAssignToDock(Market market)
 	{
 		market ??= Market.Instance;
@@ -99,8 +106,24 @@ public class CustomerController : MonoBehaviour, IPoolable
 		return false;
 	}
 
+	public bool TryBuyAtTargetDock(Dock dock = null)
+	{
+		var targetDock = dock != null ? dock : _targetDock;
+		if (targetDock == null)
+		{
+			return false;
+		}
+
+		return targetDock.TryCompleteCustomerPurchase(this);
+	}
+
 	public void ReturnToPool()
 	{
+		if (_productPackage != null && !_productPackage.IsEmpty)
+		{
+			_productPackage.ReleaseAllFruitsToPool();
+		}
+
 		var poolManager = Object.FindFirstObjectByType<PoolManager>();
 		if (poolManager != null)
 		{

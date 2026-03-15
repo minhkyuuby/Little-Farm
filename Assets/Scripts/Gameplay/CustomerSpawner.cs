@@ -7,6 +7,7 @@ public class CustomerSpawner : MonoBehaviour
     [SerializeField] private CustomerController _customerPrefab;
     [SerializeField] private Market _market;
     [SerializeField] private Transform _spawnPoint;
+    [SerializeField] private Transform _releaseEndPoint;
     [SerializeField] private string _poolId = "customers";
     [SerializeField] private PoolSettings _poolSettings = new();
     [SerializeField, Min(1)] private int _maxActiveCustomers = 1;
@@ -109,6 +110,7 @@ public class CustomerSpawner : MonoBehaviour
         }
 
         var spawnRef = _spawnPoint != null ? _spawnPoint : transform;
+        var releaseRef = _releaseEndPoint != null ? _releaseEndPoint : spawnRef;
         var poolManager = PoolManager.Instance;
         var customer = poolManager != null
             ? poolManager.Spawn<CustomerController>(_poolId, spawnRef.position, spawnRef.rotation)
@@ -125,6 +127,8 @@ public class CustomerSpawner : MonoBehaviour
             customer.ReturnToPool();
             return false;
         }
+
+        customer.SetReleasePosition(releaseRef.position);
 
         _activeCustomers.Add(customer);
         return true;
@@ -163,6 +167,7 @@ public class CustomerSpawner : MonoBehaviour
         }
 
         var spawnRef = _spawnPoint != null ? _spawnPoint : transform;
+        var releaseRef = _releaseEndPoint != null ? _releaseEndPoint : spawnRef;
         var poolManager = PoolManager.Instance;
         var customer = poolManager != null
             ? poolManager.Spawn<CustomerController>(_poolId, spawnRef.position, spawnRef.rotation)
@@ -181,6 +186,7 @@ public class CustomerSpawner : MonoBehaviour
         }
 
         customer.SetTargetMarket(_market);
+        customer.SetReleasePosition(releaseRef.position);
 
         _activeCustomers.Add(customer);
         TryFillCapacity();

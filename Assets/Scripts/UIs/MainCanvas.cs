@@ -5,6 +5,7 @@ public class MainCanvas : MonoBehaviour
     [SerializeField] private Canvas _canvas;
 
     [SerializeField] private UpgradeCanvas _upgradeCanvas;
+    [SerializeField] private PlantInfoCanvas _plantInfoCanvas;
 
     void OnValidate()
     {
@@ -17,6 +18,11 @@ public class MainCanvas : MonoBehaviour
         {
             _upgradeCanvas = FindFirstObjectByType<UpgradeCanvas>();
         }
+
+        if (_plantInfoCanvas == null)
+        {
+            _plantInfoCanvas = FindFirstObjectByType<PlantInfoCanvas>();
+        }
     }
 
     private void Start()
@@ -26,6 +32,22 @@ public class MainCanvas : MonoBehaviour
 
     public void ShowUpgradeCanvas()
     {
-        _upgradeCanvas.Show();
+        if (_upgradeCanvas != null)
+        {
+            _upgradeCanvas.Show();
+        }
+    }
+
+    public void TogglePlantInfoCanvas()
+    {
+        if (_plantInfoCanvas == null)
+        {
+            _plantInfoCanvas = FindFirstObjectByType<PlantInfoCanvas>();
+        }
+
+        if (_plantInfoCanvas != null)
+        {
+            _plantInfoCanvas.Toggle();
+        }
     }
 }

@@ -7,6 +7,7 @@ public class DeliveryGuySpawner : MonoBehaviour
     [SerializeField] private DeliveryGuyController _deliveryGuyPrefab;
     [SerializeField] private Garden _garden;
     [SerializeField] private Transform _spawnPoint;
+    [SerializeField] private Transform _releaseEndPoint;
     [SerializeField] private string _poolId = "delivery-guys";
     [SerializeField] private PoolSettings _poolSettings = new();
     [SerializeField, Min(1)] private int _maxActiveDeliveryGuys = 1;
@@ -108,6 +109,7 @@ public class DeliveryGuySpawner : MonoBehaviour
         }
 
         var spawnRef = _spawnPoint != null ? _spawnPoint : transform;
+        var releaseRef = _releaseEndPoint != null ? _releaseEndPoint : spawnRef;
         var poolManager = PoolManager.Instance;
         var deliveryGuy = poolManager != null
             ? poolManager.Spawn<DeliveryGuyController>(_poolId, spawnRef.position, spawnRef.rotation)
@@ -121,6 +123,7 @@ public class DeliveryGuySpawner : MonoBehaviour
 
         deliveryGuy.SetTargetPlant(targetPlant);
         deliveryGuy.SetTargetDock(null);
+        deliveryGuy.SetReleasePosition(releaseRef.position);
         _activeDeliveryGuys.Add(deliveryGuy);
         return true;
     }
