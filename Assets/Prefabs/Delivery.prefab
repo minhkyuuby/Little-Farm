@@ -311,7 +311,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: dfeaeb4277f8231449f41fc71bf91003, type: 2}
+  - {fileID: 2100000, guid: acf8823658c334d4ab33d677a3045f05, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1202,8 +1202,6 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 6189031941684784857}
-  - {fileID: 2134864908244946697}
-  - {fileID: 6514167691253798742}
   m_Father: {fileID: 6540654423376592508}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &6305485504896431386
@@ -1218,41 +1216,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 81508edf89bed7e4d9bed57359473def, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProductPackage
-  _fruitPositions:
-  - {fileID: 6189031941684784857}
-  - {fileID: 2134864908244946697}
-  - {fileID: 6514167691253798742}
---- !u!1 &4431322750582249919
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6514167691253798742}
-  m_Layer: 8
-  m_Name: Point (2)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6514167691253798742
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4431322750582249919}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.6, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8703180682405025927}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  _stackStartPosition: {fileID: 6189031941684784857}
+  _stackStepY: 0.3
 --- !u!1 &4743257953351667483
 GameObject:
   m_ObjectHideFlags: 0
@@ -1326,8 +1291,8 @@ GameObject:
   m_Component:
   - component: {fileID: 6540654423376592508}
   - component: {fileID: 7120770908357267663}
-  - component: {fileID: 1832388176134084760}
   - component: {fileID: 8028565958061665706}
+  - component: {fileID: 670462848118717781}
   m_Layer: 0
   m_Name: Delivery
   m_TagString: Untagged
@@ -1367,8 +1332,8 @@ MonoBehaviour:
   m_Graph: {fileID: -7075872574295991841, guid: 5129d3c36d271194f93e9adbf2dd7099, type: 2}
   m_BlackboardVariableOverridesList:
   - rid: 8839412996200202446
-  - rid: 8839412996200202488
   - rid: 8839412996200202736
+  - rid: 8839413023988514949
   m_OriginalGraph: {fileID: -7075872574295991841, guid: 5129d3c36d271194f93e9adbf2dd7099, type: 2}
   m_IsInitialised: 0
   m_IsStarted: 0
@@ -1383,14 +1348,6 @@ MonoBehaviour:
           m_Value1: 0
         Name: Self
         m_Value: {fileID: 5081378640111839596}
-    - rid: 8839412996200202488
-      type: {class: 'BlackboardVariable`1[[UnityEngine.Transform, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
-      data:
-        GUID:
-          m_Value0: 14848479451534385701
-          m_Value1: 9213877072036818487
-        Name: targetPlant
-        m_Value: {fileID: 0}
     - rid: 8839412996200202736
       type: {class: 'BlackboardVariable`1[[System.Single, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
       data:
@@ -1398,29 +1355,15 @@ MonoBehaviour:
           m_Value0: 17304028106019332984
           m_Value1: 1334939006580552617
         Name: ReachTargetThreshold
-        m_Value: 1.6
---- !u!195 &1832388176134084760
-NavMeshAgent:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5081378640111839596}
-  m_Enabled: 1
-  m_AgentTypeID: 0
-  m_Radius: 0.5
-  m_Speed: 3
-  m_Acceleration: 8
-  avoidancePriority: 50
-  m_AngularSpeed: 120
-  m_StoppingDistance: 0
-  m_AutoTraverseOffMeshLink: 1
-  m_AutoBraking: 1
-  m_AutoRepath: 1
-  m_Height: 2
-  m_BaseOffset: 0
-  m_WalkableMask: 4294967295
-  m_ObstacleAvoidanceType: 4
+        m_Value: 1.8
+    - rid: 8839413023988514949
+      type: {class: 'BlackboardVariable`1[[UnityEngine.Animator, UnityEngine.AnimationModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 3280488620240709043
+          m_Value1: 5216527366984670468
+        Name: Animator
+        m_Value: {fileID: 1677055900559989277}
 --- !u!114 &8028565958061665706
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1433,8 +1376,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1ef2b8b388d42d4aa2cb5e62c2bd9fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryGuyController
-  animator: {fileID: 1677055900559989277}
   _productPackage: {fileID: 6305485504896431386}
+  _behaviorRunner: {fileID: 7120770908357267663}
+  _forceRestartBehaviorOnSpawn: 1
+--- !u!195 &670462848118717781
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5081378640111839596}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.25
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
 --- !u!1 &5693225996506118139
 GameObject:
   m_ObjectHideFlags: 0
@@ -1497,37 +1463,6 @@ Transform:
   m_Children:
   - {fileID: 1677055900567680465}
   m_Father: {fileID: 6805065296879471203}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &6729951307259581104
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2134864908244946697}
-  m_Layer: 8
-  m_Name: Point (1)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &2134864908244946697
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6729951307259581104}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 2.3, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8703180682405025927}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6912703374526679851
 GameObject:

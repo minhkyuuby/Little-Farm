@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using LittleFarm.GameplayEventSubject;
 
 public class Plant : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class Plant : MonoBehaviour
     private readonly List<Fruit> _activeFruits = new();
     private Coroutine _growthRoutine;
     private bool _isHarvestable;
+    private bool _isReservedForHarvest;
 
     private void Start()
     {
@@ -32,9 +34,28 @@ public class Plant : MonoBehaviour
 
         ReleaseFruitsToPool();
         _isHarvestable = false;
+        _isReservedForHarvest = false;
     }
 
     public bool IsHarvestable => _isHarvestable;
+    public bool IsReservedForHarvest => _isReservedForHarvest;
+    public bool IsAvailableForHarvest => _isHarvestable && !_isReservedForHarvest;
+
+    public bool TryReserveForHarvest()
+    {
+        if (!IsAvailableForHarvest)
+        {
+            return false;
+        }
+
+        _isReservedForHarvest = true;
+        return true;
+    }
+
+    public void ReleaseHarvestReservation()
+    {
+        _isReservedForHarvest = false;
+    }
 
     public void StartGrowthLoop()
     {
@@ -60,6 +81,7 @@ public class Plant : MonoBehaviour
 
         _activeFruits.Clear();
         _isHarvestable = false;
+        _isReservedForHarvest = false;
         return true;
     }
 
@@ -69,6 +91,7 @@ public class Plant : MonoBehaviour
         {
             SpawnFruits();
             _isHarvestable = false;
+            _isReservedForHarvest = false;
 
             var elapsed = 0f;
             var duration = Mathf.Max(0.01f, GetDevelopmentDuration());
@@ -83,6 +106,7 @@ public class Plant : MonoBehaviour
 
             SetFruitGrowth(1f);
             _isHarvestable = true;
+            EventBus.Publish(new PlantProduced(this));
 
             while (_isHarvestable)
             {
@@ -164,14 +188,23 @@ public class Plant : MonoBehaviour
 
     private void ReleaseFruitsToPool()
     {
+        var poolManager = Object.FindFirstObjectByType<PoolManager>();
+        if (poolManager == null)
+        {
+            _activeFruits.Clear();
+            return;
+        }
+
         for (var i = 0; i < _activeFruits.Count; i++)
         {
             var fruit = _activeFruits[i];
             if (fruit != null)
             {
-                PoolManager.Instance.Release(fruit);
+                poolManager.Release(fruit);
             }
         }
+
+        _activeFruits.Clear();
     }
 
     private Fruit GetFruitPrefab()

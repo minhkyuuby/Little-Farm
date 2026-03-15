@@ -3,6 +3,8 @@ using UnityEngine;
 public abstract class SingletonWrapper<T> : MonoBehaviour where T : MonoBehaviour
 {
     private static T _instance;
+    private static bool _isShuttingDown;
+    private static readonly object InstanceLock = new();
 
     protected virtual bool PersistAcrossScenes => true;
 
@@ -10,8 +12,23 @@ public abstract class SingletonWrapper<T> : MonoBehaviour where T : MonoBehaviou
     {
         get
         {
-            if (_instance == null)
+            if (_isShuttingDown)
             {
+                return null;
+            }
+
+            if (_instance != null)
+            {
+                return _instance;
+            }
+
+            lock (InstanceLock)
+            {
+                if (_instance != null)
+                {
+                    return _instance;
+                }
+
                 _instance = Object.FindFirstObjectByType<T>();
 
                 if (_instance == null)
@@ -27,6 +44,8 @@ public abstract class SingletonWrapper<T> : MonoBehaviour where T : MonoBehaviou
 
     protected virtual void Awake()
     {
+        _isShuttingDown = false;
+
         if (_instance == null)
         {
             _instance = this as T;
@@ -40,5 +59,20 @@ public abstract class SingletonWrapper<T> : MonoBehaviour where T : MonoBehaviou
         {
             Destroy(gameObject);
         }
+    }
+
+    protected virtual void OnApplicationQuit()
+    {
+        _isShuttingDown = true;
+    }
+
+    protected virtual void OnDestroy()
+    {
+        if (_instance == this)
+        {
+            _instance = null;
+        }
+
+        _isShuttingDown = true;
     }
 }

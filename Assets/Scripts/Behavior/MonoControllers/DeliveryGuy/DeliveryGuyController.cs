@@ -1,25 +1,32 @@
 using UnityEngine;
+using Unity.Behavior;
+using LittleFarm.GameplayEventSubject;
 
-public class DeliveryGuyController : MonoBehaviour
+public class DeliveryGuyController : MonoBehaviour, IPoolable
 {
-    [SerializeField]
-    private Animator animator;
     [SerializeField] private ProductPackage _productPackage;
+    [SerializeField] private BehaviorGraphAgent _behaviorRunner;
+    [SerializeField] private bool _forceRestartBehaviorOnSpawn = true;
+
+    private Plant _targetPlant;
+    private Dock _targetDock;
 
     public ProductPackage ProductPackage => _productPackage;
     public bool HasCargo => _productPackage != null && _productPackage.HasFruits;
     public bool IsCargoEmpty => _productPackage == null || _productPackage.IsEmpty;
+    public Plant TargetPlant => _targetPlant;
+    public Dock TargetDock => _targetDock;
 
     void OnValidate()
     {
-        if (animator == null)
-        {
-            animator = GetComponent<Animator>();
-        }
-
         if (_productPackage == null)
         {
             _productPackage = GetComponentInChildren<ProductPackage>();
+        }
+
+        if (_behaviorRunner == null)
+        {
+            _behaviorRunner = GetComponent<BehaviorGraphAgent>();
         }
     }
     
@@ -30,7 +37,13 @@ public class DeliveryGuyController : MonoBehaviour
             return false;
         }
 
-        return plant.TryHarvest(_productPackage);
+        var harvested = plant.TryHarvest(_productPackage);
+        if (harvested)
+        {
+            _targetPlant = null;
+        }
+
+        return harvested;
     }
 
     public bool TryDeliverToCustomer(CustomerController customer)
@@ -56,5 +69,87 @@ public class DeliveryGuyController : MonoBehaviour
         }
 
         return false;
+    }
+
+    public void SetTargetPlant(Plant plant)
+    {
+        _targetPlant = plant;
+    }
+
+    public void SetTargetDock(Dock dock)
+    {
+        _targetDock = dock;
+    }
+
+    public bool TryReserveDeliveryDock(Market market = null)
+    {
+        market ??= Market.Instance;
+
+        if (market == null || !HasCargo)
+        {
+            return false;
+        }
+
+        if (market.TryReserveDockForDelivery(this, out var dock))
+        {
+            _targetDock = dock;
+            return true;
+        }
+
+        return false;
+    }
+
+    public bool TryDeliverAtDock(Dock dock = null)
+    {
+        var targetDock = dock != null ? dock : _targetDock;
+        if (targetDock == null)
+        {
+            return false;
+        }
+
+        return targetDock.TryCompleteDelivery(this);
+    }
+
+    public void ReturnToPool()
+    {
+        var poolManager = Object.FindFirstObjectByType<PoolManager>();
+        if (poolManager != null)
+        {
+            poolManager.Release(this);
+            return;
+        }
+
+        gameObject.SetActive(false);
+    }
+
+    public void OnSpawned()
+    {
+        _targetDock = null;
+
+        if (_forceRestartBehaviorOnSpawn)
+        {
+            ForceRestartBehaviorRunner();
+        }
+    }
+
+    public void OnDespawned()
+    {
+        _targetDock = null;
+        EventBus.Publish(new DeliveryGuyReturned(this));
+    }
+
+    private void ForceRestartBehaviorRunner()
+    {
+        if (_behaviorRunner == null)
+        {
+            _behaviorRunner = GetComponent<BehaviorGraphAgent>();
+        }
+
+        if (_behaviorRunner == null)
+        {
+            return;
+        }
+
+        _behaviorRunner.Restart();
     }
 }

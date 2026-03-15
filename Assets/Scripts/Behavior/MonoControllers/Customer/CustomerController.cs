@@ -1,8 +1,13 @@
 using UnityEngine;
+using Unity.Behavior;
 
-public class CustomerController : MonoBehaviour
+public class CustomerController : MonoBehaviour, IPoolable
 {
 	[SerializeField] private ProductPackage _productPackage;
+	[SerializeField] private BehaviorGraphAgent _behaviorRunner;
+	[SerializeField] private bool _forceRestartBehaviorOnSpawn = true;
+	private Dock _targetDock;
+	private Market _targetMarket;
 
 	private int _purchasedFruitCount;
 	private bool _hasPurchased;
@@ -10,12 +15,19 @@ public class CustomerController : MonoBehaviour
 	public bool HasPurchased => _hasPurchased;
 	public int PurchasedFruitCount => _purchasedFruitCount;
 	public ProductPackage ProductPackage => _productPackage;
+	public Dock TargetDock => _targetDock;
+	public Market TargetMarket => _targetMarket;
 
 	private void OnValidate()
 	{
 		if (_productPackage == null)
 		{
 			_productPackage = GetComponentInChildren<ProductPackage>();
+		}
+
+		if (_behaviorRunner == null)
+		{
+			_behaviorRunner = GetComponent<BehaviorGraphAgent>();
 		}
 	}
 
@@ -58,8 +70,84 @@ public class CustomerController : MonoBehaviour
 		_hasPurchased = false;
 	}
 
+	public void SetTargetDock(Dock dock)
+	{
+		_targetDock = dock;
+	}
+
+	public void SetTargetMarket(Market market)
+	{
+		_targetMarket = market;
+	}
+
+	public bool TryAssignToDock(Market market)
+	{
+		market ??= Market.Instance;
+
+		if (market == null)
+		{
+			return false;
+		}
+
+		if (market.TryAssignCustomerToDock(this, out var dock))
+		{
+			_targetDock = dock;
+			_targetMarket = market;
+			return true;
+		}
+
+		return false;
+	}
+
+	public void ReturnToPool()
+	{
+		var poolManager = Object.FindFirstObjectByType<PoolManager>();
+		if (poolManager != null)
+		{
+			poolManager.Release(this);
+			return;
+		}
+
+		gameObject.SetActive(false);
+	}
+
 	public void Despawn()
 	{
-		gameObject.SetActive(false);
+		_targetDock = null;
+		_targetMarket = null;
+		ReturnToPool();
+	}
+
+	public void OnSpawned()
+	{
+		_targetDock = null;
+		_targetMarket = null;
+		ResetPurchaseState();
+
+		if (_forceRestartBehaviorOnSpawn)
+		{
+			ForceRestartBehaviorRunner();
+		}
+	}
+
+	public void OnDespawned()
+	{
+		_targetDock = null;
+		_targetMarket = null;
+	}
+
+	private void ForceRestartBehaviorRunner()
+	{
+		if (_behaviorRunner == null)
+		{
+			_behaviorRunner = GetComponent<BehaviorGraphAgent>();
+		}
+
+		if (_behaviorRunner == null)
+		{
+			return;
+		}
+
+		_behaviorRunner.Restart();
 	}
 }

@@ -3,15 +3,18 @@ using UnityEngine;
 
 public class ProductPackage : MonoBehaviour
 {
-    [SerializeField] private List<Transform> _fruitPositions = new();
+    [SerializeField] private Transform _stackStartPosition;
+    [SerializeField] private float _stackStepY = 0.2f;
 
     private readonly List<Fruit> _storedFruits = new();
 
     public bool IsEmpty => _storedFruits.Count == 0;
     public bool HasFruits => _storedFruits.Count > 0;
-    public int Capacity => _fruitPositions.Count;
+    public int Capacity => int.MaxValue;
     public int Count => _storedFruits.Count;
-    public int FreeSlots => Mathf.Max(0, Capacity - Count);
+    public int FreeSlots => int.MaxValue;
+
+    private Transform StackRoot => _stackStartPosition != null ? _stackStartPosition : transform;
 
     public bool TryLoadFruits(IReadOnlyList<Fruit> fruits)
     {
@@ -20,34 +23,15 @@ public class ProductPackage : MonoBehaviour
             return false;
         }
 
-        var count = Mathf.Min(fruits.Count, _fruitPositions.Count);
-        if (count == 0)
-        {
-            return false;
-        }
-
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < fruits.Count; i++)
         {
             var fruit = fruits[i];
-            var slot = _fruitPositions[i];
-            if (fruit == null || slot == null)
+            if (fruit == null)
             {
                 continue;
             }
 
-            fruit.transform.SetParent(slot, false);
-            fruit.transform.SetPositionAndRotation(slot.position, slot.rotation);
-            fruit.transform.localScale = Vector3.one;
-            _storedFruits.Add(fruit);
-        }
-
-        for (var i = count; i < fruits.Count; i++)
-        {
-            var extraFruit = fruits[i];
-            if (extraFruit != null)
-            {
-                PoolManager.Instance.Release(extraFruit);
-            }
+            AttachFruitToTop(fruit);
         }
 
         return _storedFruits.Count > 0;
@@ -80,11 +64,6 @@ public class ProductPackage : MonoBehaviour
             return false;
         }
 
-        if (target.FreeSlots < Count)
-        {
-            return false;
-        }
-
         for (var i = 0; i < _storedFruits.Count; i++)
         {
             var fruit = _storedFruits[i];
@@ -93,7 +72,7 @@ public class ProductPackage : MonoBehaviour
                 continue;
             }
 
-            target.AttachFruitToNextFreeSlot(fruit);
+            target.AttachFruitToTop(fruit);
         }
 
         _storedFruits.Clear();
@@ -109,52 +88,38 @@ public class ProductPackage : MonoBehaviour
 
     private void ReleaseStoredFruits()
     {
+        var poolManager = Object.FindFirstObjectByType<PoolManager>();
+        if (poolManager == null)
+        {
+            _storedFruits.Clear();
+            return;
+        }
+
         for (var i = 0; i < _storedFruits.Count; i++)
         {
             var fruit = _storedFruits[i];
             if (fruit != null)
             {
-                PoolManager.Instance.Release(fruit);
+                poolManager.Release(fruit);
             }
         }
 
         _storedFruits.Clear();
     }
 
-    private void AttachFruitToNextFreeSlot(Fruit fruit)
+    private void AttachFruitToTop(Fruit fruit)
     {
         if (fruit == null)
         {
             return;
         }
 
-        for (var i = 0; i < _fruitPositions.Count; i++)
-        {
-            var slot = _fruitPositions[i];
-            if (slot == null || IsSlotOccupied(slot))
-            {
-                continue;
-            }
+        var root = StackRoot;
+        var offset = Vector3.up * Mathf.Max(0f, _stackStepY) * _storedFruits.Count;
 
-            fruit.transform.SetParent(slot, false);
-            fruit.transform.SetPositionAndRotation(slot.position, slot.rotation);
-            fruit.transform.localScale = Vector3.one;
-            _storedFruits.Add(fruit);
-            return;
-        }
-    }
-
-    private bool IsSlotOccupied(Transform slot)
-    {
-        for (var i = 0; i < _storedFruits.Count; i++)
-        {
-            var fruit = _storedFruits[i];
-            if (fruit != null && fruit.transform.parent == slot)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        fruit.transform.SetParent(root, false);
+        fruit.transform.SetPositionAndRotation(root.position + offset, root.rotation);
+        fruit.transform.localScale = Vector3.one;
+        _storedFruits.Add(fruit);
     }
 }
