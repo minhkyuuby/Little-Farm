@@ -475,10 +475,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6540654423376592508}
+  - component: {fileID: 5184145275537709973}
   - component: {fileID: 5607482431797938016}
   - component: {fileID: 722764002556764322}
   m_Layer: 0
-  m_Name: Construction
+  m_Name: PlantSlot
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -504,6 +505,24 @@ Transform:
   - {fileID: 2565548378552595683}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5184145275537709973
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5081378640111839596}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f358a21b3d73f745819753e4a2cf487, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tree
+  _fruitPositions:
+  - {fileID: 1302891246214687470}
+  - {fileID: 1302891244408951080}
+  - {fileID: 1302891245176948397}
+  _fruitConfig: {fileID: 11400000, guid: e9e63526ff2404140b424a4476748db3, type: 2}
+  _autoStartGrowth: 1
 --- !u!208 &5607482431797938016
 NavMeshObstacle:
   m_ObjectHideFlags: 0
