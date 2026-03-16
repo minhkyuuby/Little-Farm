@@ -124,7 +124,7 @@ Ví dụ các sự kiện sử dụng EventBus:
 
 ## Customer UI Image
 
-UI của **Customer View** hiện tại chưa cập nhật đúng hình ảnh fruit.
+UI của **Delivery Capacity View** hiện tại chưa cập nhật đúng hình ảnh thumbnail.
 
 Hiện vẫn đang sử dụng **placeholder image (gem icon)**.
 
